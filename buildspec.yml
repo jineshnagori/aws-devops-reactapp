@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 677980270894.dkr.ecr.ap-south-1.amazonaws.com
+      - export REPOSITORY_URI=677980270894.dkr.ecr.ap-south-1.amazonaws.com/ecrapsouthdemo001
+      - export TIMESTAMP=$(date +'%Y%m%d%H%M%S')
+      - export IMAGE_TAG=latest-${TIMESTAMP}
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t ecrapsouthdemo001 .
+      - echo "Adding tag to Docker image..."
+      - docker tag ecrapsouthdemo001:latest $REPOSITORY_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo "Pushing Docker image to Amazon ECR..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
